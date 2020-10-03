@@ -1,5 +1,6 @@
 #define CONFIG_ESP_INT_WDT_TIMEOUT_MS 4000
 #define CONFIG_ESP_INT_WDT_CHECK_CPU1 0
+#define FASTLED_ALLOW_INTERRUPTS 0
 //#include "soc/rtc_wdt.h"
 #include <time.h>
 #include <WiFi.h>
@@ -23,7 +24,7 @@
 #define ROTARY_ENCODER_BUTTON_PIN 25
 #define ROTARY_ENCODER_VCC_PIN 27 /*put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
 
-int scrolldelay = 20;
+int scrolldelay = 0;
 //Global variables messy but it works.  Need array for all items title, description, pubDate, link, guid
 enum color
 {
@@ -266,14 +267,14 @@ void scrollMe()
   
   int xw = matrix->width();
   int printIndex = findNULL(printMe);
-
+  int scrollsize = (printIndex * 6) * (-1);
   while (true)
   {
     matrix->fillScreen(0);
     matrix->setCursor(xw, 0);
     // matrix->setTextColor(colors[dcolor]);
     matrix->print(F(printMe));
-    if (--xw < (printIndex * 6) * (-1))
+    if (--xw < scrollsize)
     {
       xw = matrix->width();
       if (++pass > maxColors)
@@ -285,13 +286,12 @@ void scrollMe()
    
     
     matrix->show();
-    int delaymarker = millis() + scrolldelay;
-    while(millis() < delaymarker){
-        yield();
-    }
     rotary_loop();
     if(nextstory){
       nextstory = false;
+      if (++pass > maxColors)
+        pass = 0;
+      matrix->setTextColor(colors[pass]);
       return;
     }
   }
@@ -324,14 +324,14 @@ void scrollMe(int dcolor)
     // Serial.print(" ");
     // Serial.println(xw);
     matrix->show();
-    int delaymarker = millis() + scrolldelay;
-    while(millis() < delaymarker){
-        yield();
-    }
     rotary_loop();
-
-
-    
+      if(nextstory){
+      nextstory = false;
+      if (++pass > maxColors)
+        pass = 0;
+      matrix->setTextColor(colors[pass]);
+      return;
+    }
   }
 }
 
