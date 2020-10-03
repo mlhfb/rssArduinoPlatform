@@ -283,9 +283,7 @@ void scrollMe()
     }
     
    
-    // Serial.print(pass);
-    // Serial.print(" ");
-    // Serial.println(xw);
+    
     matrix->show();
     int delaymarker = millis() + scrolldelay;
     while(millis() < delaymarker){
