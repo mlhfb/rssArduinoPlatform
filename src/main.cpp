@@ -1,7 +1,7 @@
 #define CONFIG_ESP_INT_WDT_TIMEOUT_MS 4000
 #define CONFIG_ESP_INT_WDT_CHECK_CPU1 0
-#define FASTLED_ALLOW_INTERRUPTS 0
 //#include "soc/rtc_wdt.h"
+#define FASTLED_ALLOW_INTERRUPTS 0
 #include <time.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -98,11 +98,13 @@ struct site_t
   const char *url;
   const feeds feed;
 } sites[] = {
+   // {"scorepro.com", "https://feeds.npr.org/1001/rss.xml", npr},
     {"scorepro.com", "https://api.openweathermap.org/data/2.5/weather?id=4997384&appid=63fb95ee3d23461df79f5cd0c0a4febc&mode=xml&units=imperial", weather},
-    {"scorepro.com", "https://www.scorespro.com/rss2/live-baseball.xml", mlb},
-
-    {"scorepro.com", "https://www.scorespro.com/rss2/live-hockey.xml", nhl},
-    {"scorepro.com", "https://www.scorespro.com/rss2/live-basketball.xml", nba},
+    {"scorepro.com", "https://charlie.servebeer.com/mlb.php", npr},
+    {"scorepro.com", "https://charlie.servebeer.com/nhl.php", npr },
+    {"scorepro.com", "https://charlie.servebeer.com/nba.php", npr },
+    {"scorepro.com", "https://charlie.servebeer.com/nfl.php", npr },
+    {"scorepro.com", "https://charlie.servebeer.com/ncaaf.php", npr },
     {"scorepro.com", "https://feeds.npr.org/1001/rss.xml", npr}
 
     //{"CNN.com", "http://rss.cnn.com/rss/edition.rss", "title"},
@@ -117,8 +119,10 @@ struct rssFeed
 };
 struct rssFeed rss[20];    // This is likely is not enough for NCAA, NBA, CBA when in full schedule... address by 2021 ;)
 struct rssFeed scroll[20]; // likely enough as this only contains one sites worth of items of interest only NHL, MLB, 3 basketball teams....
-const char *ssid = "MMM";
-const char *password = "napieralski";
+const char *ssid = "ASUS2.4-Plus";
+const char *password = "81828375";
+//const char *ssid = "ASUS2.4-Plus";
+//const char *password = "81828375";
 int httpGetChar();    // I'm not 100% sure, but the funtion httpGetChar is a very clever way to pass HTTP stream to TinyXML... well cleaver for a n00b
 int rssIndex = 0;     // index of rss[] globally so the tinyXML callback has scope
 int siteIndex = 0;    // index of sites[] globally so the tinyXML callback has scope
@@ -153,7 +157,7 @@ AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, 
 int test_limits = 2;
 bool setdelay = false;
 bool nextstory = false;
-int bright = 15;
+int bright = 3;
 void rotary_onButtonClick() {
 	//rotaryEncoder.reset();
 	//rotaryEncoder.disable();
@@ -202,9 +206,9 @@ void rotary_loop() {
 
 
     //scrolldelay = scrolldelay + encoderDelta;
-    }
+    
 	} 
-	
+}
 
 int findNULL(char *s)
 {
@@ -267,14 +271,14 @@ void scrollMe()
   
   int xw = matrix->width();
   int printIndex = findNULL(printMe);
-  int scrollsize = (printIndex * 6) * (-1);
+
   while (true)
   {
     matrix->fillScreen(0);
     matrix->setCursor(xw, 0);
     // matrix->setTextColor(colors[dcolor]);
     matrix->print(F(printMe));
-    if (--xw < scrollsize)
+    if (--xw < (printIndex * 6) * (-1))
     {
       xw = matrix->width();
       if (++pass > maxColors)
@@ -284,8 +288,11 @@ void scrollMe()
     }
     
    
-    
+    // Serial.print(pass);
+    // Serial.print(" ");
+    // Serial.println(xw);
     matrix->show();
+     
     rotary_loop();
     if(nextstory){
       nextstory = false;
@@ -293,8 +300,8 @@ void scrollMe()
         pass = 0;
       matrix->setTextColor(colors[pass]);
       return;
-    }
-  }
+   }
+  } 
 }
 
 void scrollMe(int dcolor)
@@ -802,4 +809,5 @@ void loop()
   }
 
   // delay(20000);
+  ESP.restart();
 }
